@@ -1,5 +1,7 @@
 # Student Investment Simulator
 
+https://github.com/gg21-prog/Student-Investment-Simulator/raw/main/demo.webm
+
 A browser-based stock market simulator built as a field project for financial planning. The idea came from noticing that most students learn about investing through theory — textbooks, lectures, formulas — but never actually get to practice making decisions with real stocks. The fear of losing money keeps people away. This project removes that barrier by giving you ₹1,00,000 of fake money to invest however you want, with zero real-world consequences.
 
 ---
