@@ -71,7 +71,7 @@ header {
 /* ── Right Panel ── */
 .right-panel {
   display: grid;
-  grid-template-columns: 1fr 295px;
+  grid-template-rows: 1fr 1fr;
   overflow: hidden;
 }
 
@@ -85,7 +85,7 @@ header {
 }
 
 .panel-card + .panel-card { border-top: 1px solid #1a2840; }
-.right-panel .alloc-card { border-left: 1px solid #1a2840; }
+.right-panel .alloc-card { border-top: 1px solid #1a2840; }
 
 .panel-card h3 {
   font-size: 0.65rem;
@@ -227,29 +227,35 @@ tbody tr:hover td { background: #0f1d30; }
 .empty-msg { color: #253448; text-align: center; padding: 24px 12px; font-size: 0.82rem; }
 
 /* ── Allocation Card ── */
-.alloc-card { overflow-y: auto; }
+.alloc-card {
+  overflow-y: auto;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
 .alloc-card::-webkit-scrollbar { width: 3px; }
 .alloc-card::-webkit-scrollbar-thumb { background: #1f2d42; border-radius: 3px; }
+
+.alloc-card h3 { width: 100%; margin-bottom: 0; }
 
 .chart-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 0 8px;
   flex-shrink: 0;
+  padding: 0;
 }
-#pie-chart { max-width: 155px; max-height: 155px; }
+#pie-chart { max-width: 140px; max-height: 140px; }
 
 /* ── Analytics Grid ── */
 .an-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  margin-top: 8px;
-  padding-top: 10px;
-  border-top: 1px solid #1a2840;
-  flex-shrink: 0;
+  flex: 1;
+  align-content: start;
 }
 
 .an-cell {
