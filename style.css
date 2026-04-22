@@ -498,3 +498,34 @@ tbody tr:hover td { background: #0f1d30; }
 }
 #chat-send:hover:not(:disabled) { background: #6366f1; }
 #chat-send:disabled { background: #1f2d42; cursor: not-allowed; color: #374f6b; }
+
+.key-form {
+  display: flex;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 2px 2px;
+}
+.key-form input {
+  flex: 1;
+  padding: 8px 11px;
+  background: #0b1120;
+  border: 1px solid #818cf8;
+  border-radius: 8px;
+  color: #dde3ee;
+  font-size: 0.8rem;
+  outline: none;
+  font-family: monospace;
+}
+.key-form input::placeholder { color: #2a3a50; }
+.key-form button {
+  padding: 8px 14px;
+  background: #818cf8;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.key-form button:hover { background: #6366f1; }

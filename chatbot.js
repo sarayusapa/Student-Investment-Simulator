@@ -45,10 +45,15 @@ function toggleChat() {
   document.getElementById('chat-panel').classList.toggle('open', chatOpen);
   document.getElementById('chat-fab').classList.toggle('active', chatOpen);
   if (chatOpen) {
-    if (chatMsgs.length === 0) {
+    if (!getApiKey()) {
+      showKeyPrompt();
+    } else if (chatMsgs.length === 0) {
       renderBotMsg("Hi! I'm your AI investing tutor 🎯 Ask me anything — how to buy stocks, what P&L means, which sectors to explore, or how the charts work. I'm here to help you learn!");
     }
-    setTimeout(() => document.getElementById('chat-input').focus(), 150);
+    setTimeout(() => {
+      const inp = document.getElementById('key-input') || document.getElementById('chat-input');
+      if (inp) inp.focus();
+    }, 150);
   }
 }
 
@@ -63,7 +68,7 @@ async function sendChat() {
   if (!text) return;
 
   const key = getApiKey();
-  if (!key) return;
+  if (!key) { showKeyPrompt(); return; }
 
   inp.value = '';
   renderUserMsg(text);
@@ -133,11 +138,50 @@ async function callQwen(messages, key) {
 }
 
 function getApiKey() {
-  return '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';
+  return localStorage.getItem('or_api_key') || null;
+}
+
+function saveApiKey(key) {
+  localStorage.setItem('or_api_key', key.trim());
 }
 
 function resetGrokKey() {
-  renderBotMsg("Ready to chat! Ask me anything about investing.");
+  localStorage.removeItem('or_api_key');
+  document.getElementById('chat-messages').innerHTML = '';
+  chatMsgs = [];
+  showKeyPrompt();
+}
+
+function showKeyPrompt() {
+  const wrap = document.getElementById('chat-messages');
+  wrap.innerHTML = '';
+
+  const info = document.createElement('div');
+  info.className = 'chat-msg bot';
+  info.innerHTML = 'Enter your <strong>OpenRouter API key</strong> to enable the AI tutor.<br><br>Get one free (no card needed) at <strong>openrouter.ai</strong> → Keys.';
+  wrap.appendChild(info);
+
+  const form = document.createElement('div');
+  form.className = 'key-form';
+  form.innerHTML = `
+    <input id="key-input" type="password" placeholder="sk-or-v1-..." autocomplete="off" spellcheck="false"/>
+    <button id="key-submit">Save</button>`;
+  wrap.appendChild(form);
+
+  const submit = () => {
+    const val = document.getElementById('key-input').value.trim();
+    if (!val) return;
+    saveApiKey(val);
+    wrap.innerHTML = '';
+    renderBotMsg("Key saved! Ask me anything about stocks or investing 🎯");
+  };
+
+  setTimeout(() => {
+    const inp = document.getElementById('key-input');
+    const btn = document.getElementById('key-submit');
+    if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }); }
+    if (btn) btn.addEventListener('click', submit);
+  }, 50);
 }
 
 function renderUserMsg(text) {
