@@ -82,12 +82,17 @@ async function sendChat() {
     chatMsgs.push({ role: 'assistant', content: reply });
   } catch (err) {
     console.error('[AI Tutor] Error:', err.message, err);
-    if (err.message === 'rate_limit') {
+    if (err.message === 'bad_key') {
+      localStorage.removeItem('or_api_key');
+      document.getElementById('chat-messages').innerHTML = '';
+      chatMsgs = [];
+      showKeyPrompt();
+    } else if (err.message === 'rate_limit') {
       renderBotMsg("Rate limit hit — wait a few seconds and try again.");
     } else if (err.message === 'network') {
-      renderBotMsg("Network error — are you opening this as a file:// URL? Host it on GitHub Pages or a server for the AI to work. (See F12 console for details)");
+      renderBotMsg("Network error — check your connection. (F12 for details)");
     } else {
-      renderBotMsg(`Error: ${err.message} — open browser console (F12) to see details.`);
+      renderBotMsg(`Error: ${err.message}`);
     }
   }
   setBusy(false);
@@ -115,6 +120,8 @@ async function callQwen(messages, key) {
     console.error('[AI Tutor] Fetch threw:', fetchErr);
     throw new Error('network');
   }
+
+  if (res.status === 401) throw new Error('bad_key');
 
   if (res.status === 429) {
     if (!messages._retried) {
