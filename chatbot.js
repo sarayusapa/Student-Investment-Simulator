@@ -83,10 +83,7 @@ async function sendChat() {
   } catch (err) {
     console.error('[AI Tutor] Error:', err.message, err);
     if (err.message === 'bad_key') {
-      localStorage.removeItem('or_api_key');
-      document.getElementById('chat-messages').innerHTML = '';
-      chatMsgs = [];
-      showKeyPrompt();
+      renderBotMsg("API key was rejected — click ⚙ in the top-right of this panel to enter a new one.");
     } else if (err.message === 'rate_limit') {
       renderBotMsg("Rate limit hit — wait a few seconds and try again.");
     } else if (err.message === 'network') {
@@ -154,40 +151,42 @@ function saveApiKey(key) {
 
 function resetGrokKey() {
   localStorage.removeItem('or_api_key');
-  document.getElementById('chat-messages').innerHTML = '';
   chatMsgs = [];
   showKeyPrompt();
 }
 
 function showKeyPrompt() {
   const wrap = document.getElementById('chat-messages');
-  wrap.innerHTML = '';
+
+  // remove any existing key form first
+  const existing = wrap.querySelector('.key-form');
+  if (existing) existing.remove();
 
   const info = document.createElement('div');
   info.className = 'chat-msg bot';
-  info.innerHTML = 'Enter your <strong>OpenRouter API key</strong> to enable the AI tutor.<br><br>Get one free (no card needed) at <strong>openrouter.ai</strong> → Keys.';
+  info.innerHTML = 'Paste your <strong>OpenRouter API key</strong> below.<br>Get one free at <strong>openrouter.ai → Keys</strong>.';
   wrap.appendChild(info);
 
   const form = document.createElement('div');
   form.className = 'key-form';
-  form.innerHTML = `
-    <input id="key-input" type="password" placeholder="sk-or-v1-..." autocomplete="off" spellcheck="false"/>
-    <button id="key-submit">Save</button>`;
+  form.innerHTML = `<input id="key-input" type="password" placeholder="sk-or-v1-..." autocomplete="off" spellcheck="false"/><button id="key-submit">Save</button>`;
   wrap.appendChild(form);
+  wrap.scrollTop = wrap.scrollHeight;
 
   const submit = () => {
-    const val = document.getElementById('key-input').value.trim();
+    const val = document.getElementById('key-input')?.value.trim();
     if (!val) return;
     saveApiKey(val);
-    wrap.innerHTML = '';
-    renderBotMsg("Key saved! Ask me anything about stocks or investing 🎯");
+    form.remove();
+    info.remove();
+    renderBotMsg("Key saved! Go ahead and ask me anything 🎯");
+    setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
   };
 
   setTimeout(() => {
-    const inp = document.getElementById('key-input');
-    const btn = document.getElementById('key-submit');
-    if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }); }
-    if (btn) btn.addEventListener('click', submit);
+    document.getElementById('key-input')?.focus();
+    document.getElementById('key-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    document.getElementById('key-submit')?.addEventListener('click', submit);
   }, 50);
 }
 
