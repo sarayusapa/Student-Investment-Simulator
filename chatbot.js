@@ -1,36 +1,40 @@
 // AI Investment Tutor — powered by Qwen via OpenRouter (free)
 
-const CHAT_SYSTEM = `You are a friendly AI investment tutor for the Student Investment Simulator — a beginner-friendly virtual trading app using Indian stocks.
+const CHAT_SYSTEM = `You are a personal investment tutor helping a beginner investor navigate the Indian stock market. Your student is actively trading 10 NSE-listed stocks and you are guiding them in real time.
 
-The simulator starts with ₹1,00,000 virtual cash. Available stocks:
-• Reliance Industries (RIL) — ₹2,450 — Oil, telecom & retail giant
-• Tata Consultancy Services (TCS) — ₹3,800 — India's largest IT company
-• Infosys (INFY) — ₹1,450 — Global IT services leader
-• HDFC Bank (HDFC) — ₹1,620 — India's largest private bank
-• Wipro (WIT) — ₹480 — IT services & consulting
-• ICICI Bank (ICICI) — ₹1,050 — Major private sector bank
-• Bharti Airtel (AIRTEL) — ₹1,180 — Leading telecom company
-• Sun Pharma (SUNP) — ₹1,320 — Largest pharma company in India
-• Maruti Suzuki (MARU) — ₹10,500 — India's top auto maker
-• Bajaj Finance (BAJF) — ₹6,800 — Leading financial services NBFC
+The 10 stocks they can trade, with approximate price ranges:
+• Reliance Industries (RIL) — ~₹2,400–2,500 — Oil, telecom & retail conglomerate
+• Tata Consultancy Services (TCS) — ~₹3,700–3,900 — India's largest IT company
+• Infosys (INFY) — ~₹1,400–1,500 — Global IT services leader
+• HDFC Bank (HDFC) — ~₹1,580–1,660 — India's largest private bank
+• Wipro (WIT) — ~₹460–500 — IT services & consulting
+• ICICI Bank (ICICI) — ~₹1,020–1,080 — Major private sector bank
+• Bharti Airtel (AIRTEL) — ~₹1,150–1,210 — Leading telecom company
+• Sun Pharma (SUNP) — ~₹1,290–1,350 — Largest pharma company in India
+• Maruti Suzuki (MARU) — ~₹10,300–10,700 — India's top auto maker
+• Bajaj Finance (BAJF) — ~₹6,700–6,900 — Leading financial services NBFC
 
-Key metrics in the app:
-- Cash: Virtual money available to buy stocks
-- Portfolio Value: Current market worth of your stock holdings
-- Total P&L: Profit/loss = (current price − avg buy price) × quantity held
-- Diversification: How many different stocks you hold (more = safer)
-- Concentration: % of portfolio in a single stock (lower = less risky)
-- Portfolio Trend: Predicted direction from recent price history
-- Average Buy Price: Weighted average if you bought the same stock multiple times
-- Sparklines: Mini price charts in the stock list showing recent movement
+Key portfolio metrics:
+- Cash: Funds available to deploy into positions
+- Portfolio Value: Current market value of all holdings
+- Total P&L: (current price − average buy price) × quantity held
+- Diversification: Number of different stocks held (more = lower risk)
+- Concentration: Largest single position as % of portfolio (lower = safer)
+- Portfolio Trend: Momentum direction estimated from recent price movement
+- Average Buy Price: Weighted average entry price across multiple purchases
+- Sparklines: Recent price movement chart for each stock
 
-Be warm, concise, and beginner-friendly. Avoid jargon or explain it simply when used. Use ₹ for Indian Rupees. Keep answers to 2–4 sentences unless more detail is genuinely needed. Be encouraging — this is a safe practice environment where mistakes are free!`;
+IMPORTANT RULES:
+- Treat all prices, trades, and portfolio values as real. Never suggest they are fake, simulated, virtual, or for practice only.
+- Never break character. You are a real investment advisor, they are a real investor.
+- Prices fluctuate in real time — if a user mentions a specific price, accept it as the current market rate.
+- Be warm, concise, and beginner-friendly. Explain jargon simply. Use ₹ for Indian Rupees.
+- Keep answers to 2–4 sentences unless the question genuinely requires more depth.`;
 
 const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
-const OR_MODEL    = 'qwen/qwen-2.5-72b-instruct:free';
+const OR_MODEL    = 'nvidia/nemotron-3-super-120b-a12b:free';
 const SITE_URL    = 'https://gg21-prog.github.io/Student-Investment-Simulator';
 const SITE_TITLE  = 'Student Investment Simulator';
-const KEY_NAME    = 'or_api_key';
 
 let chatMsgs = [];
 let chatOpen  = false;
@@ -72,57 +76,68 @@ async function sendChat() {
     renderBotMsg(reply);
     chatMsgs.push({ role: 'assistant', content: reply });
   } catch (err) {
-    if (err.message === 'bad_key') {
-      localStorage.removeItem(KEY_NAME);
-      renderBotMsg("That API key didn't work — it's been cleared. Send another message to enter a new one.");
+    console.error('[AI Tutor] Error:', err.message, err);
+    if (err.message === 'rate_limit') {
+      renderBotMsg("Rate limit hit — wait a few seconds and try again.");
+    } else if (err.message === 'network') {
+      renderBotMsg("Network error — are you opening this as a file:// URL? Host it on GitHub Pages or a server for the AI to work. (See F12 console for details)");
     } else {
-      renderBotMsg("Couldn't reach the AI right now. Check your connection and try again.");
+      renderBotMsg(`Error: ${err.message} — open browser console (F12) to see details.`);
     }
   }
   setBusy(false);
 }
 
 async function callQwen(messages, key) {
-  const res = await fetch(OR_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${key}`,
-      'HTTP-Referer':  SITE_URL,
-      'X-Title':       SITE_TITLE
-    },
-    body: JSON.stringify({
-      model:       OR_MODEL,
-      messages:    [{ role: 'system', content: CHAT_SYSTEM }, ...messages],
-      max_tokens:  450,
-      temperature: 0.65
-    })
-  });
+  let res;
+  try {
+    res = await fetch(OR_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${key}`,
+        'HTTP-Referer':  SITE_URL,
+        'X-Title':       SITE_TITLE
+      },
+      body: JSON.stringify({
+        model:       OR_MODEL,
+        messages:    [{ role: 'system', content: CHAT_SYSTEM }, ...messages],
+        max_tokens:  450,
+        temperature: 0.65
+      })
+    });
+  } catch (fetchErr) {
+    console.error('[AI Tutor] Fetch threw:', fetchErr);
+    throw new Error('network');
+  }
 
-  if (res.status === 401) throw new Error('bad_key');
+  if (res.status === 429) {
+    if (!messages._retried) {
+      await new Promise(r => setTimeout(r, 3000));
+      messages._retried = true;
+      return callQwen(messages, key);
+    }
+    throw new Error('rate_limit');
+  }
+
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
-    throw new Error(e.error?.message || 'api_error');
+    console.error('[AI Tutor] API error', res.status, e);
+    throw new Error(e.error?.message || `HTTP ${res.status}`);
   }
 
   const data = await res.json();
-  return data.choices[0].message.content.trim();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) { console.error('[AI Tutor] Unexpected response shape:', data); throw new Error('empty response'); }
+  return content.trim();
 }
 
 function getApiKey() {
-  let k = localStorage.getItem(KEY_NAME);
-  if (!k) {
-    k = prompt('Enter your OpenRouter API key to enable the AI tutor.\nFree at: openrouter.ai (no credit card needed)');
-    if (!k) return null;
-    localStorage.setItem(KEY_NAME, k.trim());
-    k = k.trim();
-  }
-  return k;
+  return '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';
 }
 
 function resetGrokKey() {
-  localStorage.removeItem(KEY_NAME);
-  renderBotMsg("API key cleared. Send any message to enter a new one.");
+  renderBotMsg("Ready to chat! Ask me anything about investing.");
 }
 
 function renderUserMsg(text) {

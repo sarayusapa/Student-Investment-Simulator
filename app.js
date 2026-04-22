@@ -302,3 +302,19 @@ function showMsg(text, type) {
 }
 
 init();
+
+// ── Live price ticks ──────────────────────────────────
+function tickPrices() {
+  STOCKS.forEach(s => {
+    // base ±1.8% per tick, 7% chance of a larger ±4% move
+    let pct = (Math.random() - 0.5) * 0.036;
+    if (Math.random() < 0.07) pct *= 2.2;
+    s.price = Math.max(10, Math.round(s.price * (1 + pct) * 100) / 100);
+    s.history = [...s.history.slice(1), s.price];
+  });
+  buildStockList();
+  onStockChange();
+  render();
+}
+
+setInterval(tickPrices, 20000);
