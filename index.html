@@ -102,5 +102,42 @@
 
   <script src="stocks.js"></script>
   <script src="app.js"></script>
+
+  <!-- AI Investment Tutor -->
+  <button id="chat-fab" onclick="toggleChat()" title="AI Investment Tutor">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </button>
+
+  <div id="chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">✦</div>
+        <div>
+          <div class="chat-title">AI Tutor</div>
+          <div class="chat-sub">Powered by Grok</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center">
+        <button class="chat-ctrl" onclick="resetGrokKey()" title="Change API key">⚙</button>
+        <button class="chat-ctrl" onclick="toggleChat()" title="Close">✕</button>
+      </div>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="chat-loading">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="chat-footer">
+      <input id="chat-input" type="text" placeholder="Ask about investing…" onkeydown="onChatKey(event)" autocomplete="off"/>
+      <button id="chat-send" onclick="sendChat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="chatbot.js"></script>
 </body>
 </html>
